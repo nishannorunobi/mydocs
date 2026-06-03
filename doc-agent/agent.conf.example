@@ -1,0 +1,5 @@
+# Doc Agent — Configuration
+# Copy to agent.conf and fill in your values.
+
+ANTHROPIC_API_KEY=your-api-key-here
+PORT=8893

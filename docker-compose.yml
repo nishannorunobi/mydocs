@@ -1,0 +1,131 @@
+services:
+
+  # ── MinIO object storage ──────────────────────────────────────────────────────
+  plane-minio:
+    image: minio/minio
+    container_name: plane-minio
+    command: server /minio-data --console-address ":9090"
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - plane-minio:/minio-data
+    networks:
+      - plane-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Django API ────────────────────────────────────────────────────────────────
+  plane-api:
+    image: makeplane/plane-backend:latest
+    container_name: plane-api
+    command: /scripts/api-entrypoint.sh
+    env_file: .env
+    volumes:
+      - plane-uploads:/code/uploads
+      - ./scripts/api-entrypoint.sh:/scripts/api-entrypoint.sh:ro
+    depends_on:
+      plane-minio:
+        condition: service_healthy
+    networks:
+      - plane-net
+      - ums-network
+      - mycache_mycache-net
+    restart: unless-stopped
+
+  # ── Celery async worker ───────────────────────────────────────────────────────
+  plane-worker:
+    image: makeplane/plane-backend:latest
+    container_name: plane-worker
+    command: celery -A plane worker -l info --concurrency=1
+    env_file: .env
+    volumes:
+      - plane-uploads:/code/uploads
+    networks:
+      - plane-net
+      - ums-network
+      - mycache_mycache-net
+    restart: unless-stopped
+
+  # ── Celery beat scheduler ─────────────────────────────────────────────────────
+  plane-beat:
+    image: makeplane/plane-backend:latest
+    container_name: plane-beat
+    command: celery -A plane beat -l info
+    env_file: .env
+    networks:
+      - plane-net
+      - ums-network
+      - mycache_mycache-net
+    restart: unless-stopped
+
+  # ── Next.js frontend ──────────────────────────────────────────────────────────
+  plane-web:
+    image: makeplane/plane-frontend:latest
+    container_name: plane-web
+    command: node web/server.js
+    env_file: .env
+    networks:
+      - plane-net
+    restart: unless-stopped
+
+  # ── God-mode admin panel ─────────────────────────────────────────────────────
+  plane-admin:
+    image: makeplane/plane-admin:latest
+    container_name: plane-admin
+    command: node admin/server.js
+    env_file: .env
+    networks:
+      - plane-net
+    restart: unless-stopped
+
+  # ── nginx reverse proxy ───────────────────────────────────────────────────────
+  plane-proxy:
+    image: nginx:alpine
+    container_name: plane-proxy
+    ports:
+      - "${PLANE_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - plane-api
+      - plane-web
+      - plane-admin
+    networks:
+      - plane-net
+    restart: unless-stopped
+
+  # ── Doc agent ─────────────────────────────────────────────────────────────────
+  plane-doc-agent:
+    build:
+      context: ./doc-agent
+    image: plane-doc-agent:latest
+    container_name: plane-doc-agent
+    ports:
+      - "8893:8893"
+    volumes:
+      - ./doc-agent/agent.conf:/doc-agent/agent.conf:ro
+      - ./doc-agent/memory:/doc-agent/memory
+    networks:
+      - plane-net
+      - ums-network
+    restart: unless-stopped
+
+volumes:
+  plane-minio:
+  plane-uploads:
+
+networks:
+  plane-net:
+    driver: bridge
+  ums-network:
+    external: true
+  mycache_mycache-net:
+    external: true
