@@ -102,21 +102,6 @@ services:
       - plane-net
     restart: unless-stopped
 
-  # ── Doc agent ─────────────────────────────────────────────────────────────────
-  plane-doc-agent:
-    build:
-      context: ./doc-agent
-    image: plane-doc-agent:latest
-    container_name: plane-doc-agent
-    ports:
-      - "8893:8893"
-    volumes:
-      - ./doc-agent/agent.conf:/doc-agent/agent.conf:ro
-      - ./doc-agent/memory:/doc-agent/memory
-    networks:
-      - plane-net
-      - ums-network
-    restart: unless-stopped
 
 volumes:
   plane-minio:

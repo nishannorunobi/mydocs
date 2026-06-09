@@ -1,6 +1,5 @@
 #!/bin/bash
-# clean.sh — Stop Plane and remove the doc-agent build image (forces rebuild on next start).
-# Data volumes are preserved. Use destroy.sh to also wipe all data.
+# clean.sh — Stop Plane stack. Data volumes are preserved. Use destroy.sh to also wipe all data.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,14 +19,6 @@ info "Stopping Plane stack..."
 docker compose down
 ok "Stack stopped."
 
-# Remove doc-agent image so start.sh --build recreates it fresh
-if docker image inspect plane-doc-agent:latest &>/dev/null; then
-    docker rmi plane-doc-agent:latest
-    ok "Removed plane-doc-agent:latest image."
-else
-    info "plane-doc-agent image not present — nothing to remove."
-fi
-
 echo ""
 warn "Data volumes preserved — run ${BOLD}./destroy.sh${RESET} to also wipe all Plane data."
-echo -e "\n${GREEN}Clean complete.${RESET} Run ${BOLD}./start.sh --build${RESET} to rebuild and restart.\n"
+echo -e "\n${GREEN}Clean complete.${RESET} Run ${BOLD}./start.sh${RESET} to restart.\n"
