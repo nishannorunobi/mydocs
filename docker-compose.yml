@@ -24,7 +24,7 @@ services:
 
   # ── Django API ────────────────────────────────────────────────────────────────
   plane-api:
-    image: makeplane/plane-backend:latest
+    image: makeplane/plane-backend:stable
     container_name: plane-api
     command: /scripts/api-entrypoint.sh
     env_file: .env
@@ -42,7 +42,7 @@ services:
 
   # ── Celery async worker ───────────────────────────────────────────────────────
   plane-worker:
-    image: makeplane/plane-backend:latest
+    image: makeplane/plane-backend:stable
     container_name: plane-worker
     command: celery -A plane worker -l info --concurrency=1
     env_file: .env
@@ -56,7 +56,7 @@ services:
 
   # ── Celery beat scheduler ─────────────────────────────────────────────────────
   plane-beat:
-    image: makeplane/plane-backend:latest
+    image: makeplane/plane-backend:stable
     container_name: plane-beat
     command: celery -A plane beat -l info
     env_file: .env
@@ -68,7 +68,7 @@ services:
 
   # ── Next.js frontend ──────────────────────────────────────────────────────────
   plane-web:
-    image: makeplane/plane-frontend:latest
+    image: makeplane/plane-frontend:stable
     container_name: plane-web
     command: node web/server.js
     env_file: .env
@@ -78,7 +78,7 @@ services:
 
   # ── God-mode admin panel ─────────────────────────────────────────────────────
   plane-admin:
-    image: makeplane/plane-admin:latest
+    image: makeplane/plane-admin:stable
     container_name: plane-admin
     command: node admin/server.js
     env_file: .env
