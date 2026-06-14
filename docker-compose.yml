@@ -70,7 +70,6 @@ services:
   plane-web:
     image: makeplane/plane-frontend:stable
     container_name: plane-web
-    command: node web/server.js
     env_file: .env
     networks:
       - plane-net
@@ -80,7 +79,6 @@ services:
   plane-admin:
     image: makeplane/plane-admin:stable
     container_name: plane-admin
-    command: node admin/server.js
     env_file: .env
     networks:
       - plane-net
