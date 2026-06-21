@@ -1,0 +1,3 @@
+
+# Never track log files
+*.log

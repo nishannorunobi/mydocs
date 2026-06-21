@@ -36,7 +36,7 @@ services:
         condition: service_healthy
     networks:
       - plane-net
-      - ums-network
+      - my_docker_network
       - mycache_mycache-net
     restart: unless-stopped
 
@@ -50,7 +50,7 @@ services:
       - plane-uploads:/code/uploads
     networks:
       - plane-net
-      - ums-network
+      - my_docker_network
       - mycache_mycache-net
     restart: unless-stopped
 
@@ -62,7 +62,7 @@ services:
     env_file: .env
     networks:
       - plane-net
-      - ums-network
+      - my_docker_network
       - mycache_mycache-net
     restart: unless-stopped
 
@@ -108,7 +108,7 @@ volumes:
 networks:
   plane-net:
     driver: bridge
-  ums-network:
+  my_docker_network:
     external: true
   mycache_mycache-net:
     external: true
